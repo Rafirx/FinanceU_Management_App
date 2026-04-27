@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="description" content="FinanceU – Smart financial management for college students." />
+  <title>FinanceU – Student Banking & Savings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+
+<body>
+
+  <!-- SPLASH -->
+  <div id="splash">
+    <div class="splash-inner">
+      <canvas id="splash-canvas"></canvas>
+      <div class="splash-logo"><span class="logo-sym">◈</span>Finance<span class="acc">U</span></div>
+      <p class="splash-tag">Your Smart College Finance Companion</p>
+      <div class="splash-bar">
+        <div class="splash-fill" id="splash-fill"></div>
+      </div>
+      <span class="splash-pct" id="splash-pct">0%</span>
+    </div>
+  </div>
+
+  <!-- AUTH -->
+  <div id="auth-page" class="hidden">
+    <div class="auth-box glass">
+      <div class="auth-logo"><span class="logo-sym">◈</span>Finance<span class="acc">U</span></div>
+      <h2 id="auth-title">Welcome Back</h2>
+      <p id="auth-subtitle">Sign in to manage your finances</p>
+
+      <div class="auth-form">
+        <input type="text" id="auth-user" class="mi" placeholder="Username" />
+        <input type="password" id="auth-pass" class="mi" placeholder="Password" />
+        <div id="signup-fields" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
+          <input type="text" id="auth-card" class="mi" placeholder="Card Number (e.g. 4000 1234 5678 9010)"
+            maxlength="12" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+          <div style="display:flex;gap:12px;">
+            <input type="text" id="auth-exp" class="mi" placeholder="MM/YY" />
+            <input type="text" id="auth-cvv" class="mi" placeholder="CVV" />
+          </div>
+        </div>
+        <button class="msub auth-btn" onclick="handleAuth()">Sign In</button>
+      </div>
+
+      <p class="auth-switch" onclick="toggleAuthMode()">
+        <span id="auth-switch-text">Don't have an account? Sign up</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+
+    <!-- SIDEBAR OVERLAY -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <nav id="sidebar">
+      <div class="sidebar-logo">
+        <div><span class="logo-sym">◈</span>Finance<span class="acc">U</span></div>
+        <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
+      </div>
+      <ul class="nav-list">
+        <li><button class="nav-btn active" id="nb-dashboard"
+            onclick="showPage('dashboard')"><i>⬡</i><span>Dashboard</span></button></li>
+        <li><button class="nav-btn" id="nb-wallet" onclick="showPage('wallet')"><i>◎</i><span>Wallet</span></button>
+        </li>
+        <li><button class="nav-btn" id="nb-goals" onclick="showPage('goals')"><i>◈</i><span>Savings &
+              Goals</span></button></li>
+        <li><button class="nav-btn" id="nb-payments"
+            onclick="showPage('payments')"><i>⟳</i><span>Payments</span></button></li>
+        <li><button class="nav-btn" id="nb-calendar"
+            onclick="showPage('calendar')"><i>▦</i><span>Calendar</span></button></li>
+        <li><button class="nav-btn" id="nb-assistant" onclick="showPage('assistant')"><i>✦</i><span>AXIS
+              AI</span></button></li>
+        <li style="margin-top: 20px;"><button class="nav-btn" onclick="handleLogout()"
+            style="color: var(--red);"><i>⎋</i><span>Log Out</span></button></li>
+      </ul>
+      <div class="sidebar-profile">
+        <div class="avatar" id="sidebar-avatar">AJ</div>
+        <div>
+          <p class="pname" id="sidebar-pname">Alex Johnson</p>
+          <p class="prole" id="sidebar-prole">College Student</p>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MOBILE HEADER -->
+    <header class="mob-header">
+      <button id="menu-tog" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+      <div class="mob-logo">Finance<span class="acc">U</span></div>
+      <button class="notif-btn" onclick="showPage('assistant')">🔔<span class="badge" id="notif-badge">3</span></button>
+    </header>
+
+    <!-- MAIN -->
+    <main id="main">
+
+      <!-- DASHBOARD -->
+      <section id="page-dashboard" class="page active">
+        <div class="pg-head">
+          <div>
+            <h1 class="pg-title" id="dash-greeting">Good morning, Alex 👋</h1>
+            <p class="pg-sub">Your financial overview</p>
+          </div>
+          <div class="hd-date" id="hd-date"></div>
+        </div>
+        <div class="balance-card glass" id="balance-card">
+          <div class="bc-orb o1"></div>
+          <div class="bc-orb o2"></div>
+          <div class="bc-top"><span class="bc-lbl">Total Balance</span><span class="bc-chip">● VISA</span></div>
+          <div class="bc-amount"><span class="cur">$</span><span id="bal-display">4,285.50</span></div>
+          <div class="bc-bot">
+            <div class="bc-det"><span>Card Number</span><span id="bc-card-number">•••• •••• •••• 4291</span></div>
+            <div class="bc-det"><span>Expires</span><span id="bc-card-exp">08/28</span></div>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat glass">
+            <div class="si income">↑</div>
+            <div><span class="sv" id="stat-inc">$1,840</span><span class="sl">Income</span></div><span class="st up"
+              id="stat-inc-pct">+12%</span>
+          </div>
+          <div class="stat glass">
+            <div class="si expense">↓</div>
+            <div><span class="sv" id="stat-exp">$963</span><span class="sl">Expenses</span></div><span class="st dn"
+              id="stat-exp-pct">-5%</span>
+          </div>
+          <div class="stat glass">
+            <div class="si saved">◈</div>
+            <div><span class="sv" id="stat-saved">$877</span><span class="sl">Net Saved</span></div><span class="st up"
+              id="stat-saved-pct">+8%</span>
+          </div>
+          <div class="stat glass">
+            <div class="si due">!</div>
+            <div><span class="sv" id="stat-due">$350</span><span class="sl">Due Soon</span></div><span class="st warn"
+              id="stat-due-count">3 bills</span>
+          </div>
+        </div>
+        <div class="glass card-section">
+          <div class="sec-head">
+            <h2>Spending Overview</h2>
+            <div class="tabs"><button class="tab active" onclick="switchChart('week',this)">Week</button><button
+                class="tab" onclick="switchChart('month',this)">Month</button></div>
+          </div>
+          <canvas id="spend-chart" height="180"></canvas>
+        </div>
+        <div class="glass card-section">
+          <div class="sec-head">
+            <h2>Recent Transactions</h2><button class="see-all" onclick="showPage('wallet')">See All →</button>
+          </div>
+          <ul id="recent-tx"></ul>
+        </div>
+        <div class="robot-banner glass" onclick="showPage('assistant')">
+          <canvas id="banner-robot" width="80" height="80"></canvas>
+          <div class="rb-text">
+            <p class="rb-name">🤖 AXIS says...</p>
+            <p id="rb-msg">Rent is due in 3 days! Have $800 ready.</p>
+          </div>
+          <span class="rb-arrow">→</span>
+        </div>
+      </section>
+
+      <!-- WALLET -->
+      <section id="page-wallet" class="page">
+        <div class="pg-head">
+          <div>
+            <h1 class="pg-title">My Wallet</h1>
+            <p class="pg-sub">Accounts &amp; transactions</p>
+          </div>
+        </div>
+        <div class="acc-carousel" id="acc-carousel">
+          <div class="acc-card glass acc-check">
+            <div class="acc-t">Checking</div>
+            <div class="acc-b" id="wallet-check-display">$2,485.50</div>
+            <div class="acc-n" id="wallet-check-card">•••• 4291</div>
+          </div>
+          <div class="acc-card glass acc-save">
+            <div class="acc-t">Savings</div>
+            <div class="acc-b" id="wallet-save-display">$1,200.00</div>
+            <div class="acc-n" id="wallet-save-card">•••• 8834</div>
+          </div>
+          <div class="acc-card glass acc-emer">
+            <div class="acc-t">Emergency</div>
+            <div class="acc-b" id="wallet-emer-display">$600.00</div>
+            <div class="acc-n" id="wallet-emer-card">•••• 2210</div>
+          </div>
+        </div>
+        <div class="act-grid">
+          <button class="act-btn glass" onclick="openModal('send-modal')"><span class="ai send-ai">↑</span>Send</button>
+          <button class="act-btn glass" onclick="openModal('recv-modal')"><span
+              class="ai recv-ai">↓</span>Receive</button>
+          <button class="act-btn glass" onclick="openModal('topup-modal')"><span class="ai top-ai">+</span>Top
+            Up</button>
+          <button class="act-btn glass" onclick="showPage('payments')"><span class="ai pay-ai">◎</span>Pay Bill</button>
+        </div>
+        <div class="glass card-section">
+          <div class="sec-head">
+            <h2>All Transactions</h2>
+            <select id="tx-filter" class="filter-sel" onchange="filterTx(this.value)">
+              <option value="all">All</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
+          <ul id="full-tx"></ul>
+        </div>
+      </section>
+
+      <!-- CALENDAR -->
+
+      <!-- CALENDAR -->
+      <section id="page-calendar" class="page">
+        <div class="pg-head">
+          <div>
+            <h1 class="pg-title">Financial Calendar</h1>
+            <p class="pg-sub">Track financial events</p>
+          </div><button class="add-btn" onclick="openModal('event-modal')">+ Event</button>
+        </div>
+        <div class="glass cal-card">
+          <div class="cal-head"><button onclick="changeMonth(-1)" class="cal-nav">‹</button>
+            <h2 id="cal-title"></h2><button onclick="changeMonth(1)" class="cal-nav">›</button>
+          </div>
+          <div class="cal-days">
+            <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+          </div>
+          <div id="cal-grid" class="cal-grid"></div>
+        </div>
+        <div class="glass card-section">
+          <div class="sec-head">
+            <h2>Upcoming Events</h2>
+          </div>
+          <ul id="events-list"></ul>
+        </div>
+      </section>
+
+      <!-- PAYMENTS -->
+      <section id="page-payments" class="page">
+        <div class="pg-head">
+          <div>
+            <h1 class="pg-title">Payments &amp; Bills</h1>
+            <p class="pg-sub">Never miss a payment</p>
+          </div><button class="add-btn" onclick="openModal('bill-modal')">+ Add Bill</button>
+        </div>
+        <div class="glass card-section">
+          <h2>⚡ Due Soon</h2>
+          <div id="due-soon"></div>
+        </div>
+        <div class="glass card-section">
+          <h2>🔁 Recurring Bills</h2>
+          <ul id="recurring-list"></ul>
+        </div>
+        <div class="glass card-section">
+          <h2>💸 Income Schedule</h2>
+          <ul id="income-sched"></ul>
+        </div>
+      </section>
+
+      <!-- GOALS -->
+      <section id="page-goals" class="page">
+        <div class="pg-head">
+          <div>
+            <h1 class="pg-title">Savings & Goals</h1>
+            <p class="pg-sub">Milestones worth chasing</p>
+          </div><button class="add-btn" onclick="openModal('goal-modal')">+ New Goal</button>
+        </div>
+
+        <div class="glass savings-overview">
+          <div class="ring-wrap"><canvas id="ring-chart" width="160" height="160"></canvas>
+            <div class="ring-center"><span class="rv" id="total-saved-display">$1,800</span><span class="rl">Total
+                Saved</span></div>
+          </div>
+          <div id="savings-breakdown" class="s-breakdown"></div>
+        </div>
+
+        <div class="goals-grid" id="goals-grid"></div>
+        <div class="glass card-section">
+          <h2>🏆 Achievements</h2>
+          <div class="badges-grid" id="badges-grid"></div>
+        </div>
+        <div class="glass card-section">
+          <h2>💡 AXIS Savings Tips</h2>
+          <ul id="tips-list" class="tips-list"></ul>
+        </div>
+      </section>
+
+      <!-- ASSISTANT -->
+      <section id="page-assistant" class="page">
+        <div class="pg-head">
+          <div>
+            <h1 class="pg-title">AXIS Assistant</h1>
+            <p class="pg-sub">AI-powered financial advisor</p>
+          </div>
+        </div>
+
+        <div class="glass robot-stage">
+          <canvas id="main-robot"></canvas>
+          <div class="robot-info"><span class="r-name">AXIS</span><span class="status-dot"></span><span>Active</span>
+          </div>
+          <div class="speech-bubble" id="speech-bubble">
+            <p id="speech-text">Hi Alex! I'm AXIS. Ask me anything about your finances!</p>
+          </div>
+        </div>
+        <div class="glass card-section">
+          <h2>📋 Reminders</h2>
+          <ul id="alerts-list"></ul>
+        </div>
+        <div class="glass card-section chat-wrap">
+          <h2>💬 Ask AXIS</h2>
+          <div id="chat-msgs" class="chat-msgs"></div>
+          <div id="quick-qs" class="quick-qs"></div>
+          <div class="chat-row">
+            <input id="chat-in" class="chat-in" placeholder="Ask about your finances..."
+              onkeydown="if(event.key==='Enter')sendChat()" />
+            <button onclick="sendChat()" class="chat-send">→</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODALS -->
+  <div id="modal-bg" class="modal-bg hidden" onclick="closeModals()"></div>
+
+  <div id="send-modal" class="modal hidden">
+    <div class="mh">
+      <h2>Send Money</h2><button onclick="closeModals()">✕</button>
+    </div>
+    <div class="mb">
+      <label>To</label><input id="send-to" class="mi" placeholder="Name or number" />
+      <label>Amount</label><input id="send-amt" type="number" class="mi" placeholder="$0.00" />
+      <label>Note</label><input id="send-note" class="mi" placeholder="What's it for?" />
+      <button class="msub" onclick="handleSend()">Send Money</button>
+    </div>
+  </div>
+
+  <div id="recv-modal" class="modal hidden">
+    <div class="mh">
+      <h2>Receive Money</h2><button onclick="closeModals()">✕</button>
+    </div>
+    <div class="mb">
+      <div class="qr-box">
+        <div id="qr-inner" class="qr-inner"></div>
+        <p>Share to receive payments</p>
+      </div>
+      <div class="recv-id"><span>ID: <strong>@alexj.financeu</strong></span><button class="copy-btn"
+          onclick="copyId()">Copy</button></div>
+    </div>
+  </div>
+
+  <div id="topup-modal" class="modal hidden">
+    <div class="mh">
+      <h2>Top Up Balance</h2><button onclick="closeModals()">✕</button>
+    </div>
+    <div class="mb">
+      <label>Destination</label>
+      <select id="topup-dest" class="mi">
+        <option value="checking">Checking Account</option>
+      </select>
+      <label>Amount</label>
+      <div class="quick-amts"><button onclick="setAmt(50)">$50</button><button
+          onclick="setAmt(100)">$100</button><button onclick="setAmt(200)">$200</button><button
+          onclick="setAmt(500)">$500</button></div>
+      <input id="topup-amt" type="number" class="mi" placeholder="Custom amount" />
+      <button class="msub" onclick="handleTopUp()">Add Funds</button>
+    </div>
+  </div>
+
+  <div id="vault-modal" class="modal hidden">
+    <div class="mh">
+      <h2>New Savings Vault</h2><button onclick="closeModals()">✕</button>
+    </div>
+    <div class="mb">
+      <label>Name</label><input id="v-name" class="mi" placeholder="e.g. Spring Break Trip" />
+      <label>Target</label><input id="v-target" type="number" class="mi" placeholder="$0.00" />
+      <label>Saved So Far</label><input id="v-current" type="number" class="mi" placeholder="$0.00" />
+      <label>Icon</label>
+      <div id="emoji-pick" class="emoji-pick"></div>
+      <button class="msub" onclick="addVault()">Create Vault</button>
+    </div>
+  </div>
+
+  <div id="fund-vault-modal" class="modal hidden">
+    <div class="mh">
+      <h2>Add to Vault</h2><button onclick="closeModals()">✕</button>
+    </div>
+    <div class="mb">
+      <p style="color:var(--text2);margin-bottom:16px;font-size:0.85rem">Transfer money from Checking to Savings.</p>
+      <input type="hidden" id="fund-vault-id" />
+      <label>Amount to Transfer</label>
+      <input id="fund-vault-amt" type="number" class="mi" placeholder="$0.00" />
+      <button class="msub" onclick="submitFundVault()">Transfer Funds</button>
+    </div>
+  </div>
+
+  <div id="event-modal" class="modal hidden">
+    <div class="mh">
+      <h2>Add Calendar Event</h2><button onclick="closeModals()">✕</button>
+    </div>
+    <div class="mb">
+      <label>Title</label><input id="ev-title" class="mi" placeholder="e.g. Tuition Payment" />
+      <label>Date</label><input id="ev-date" type="date" class="mi" />
+      <label>Amount</label><input id="ev-amt" type="number" class="mi" placeholder="$0.00" />
+      <label>Type</label>
+      <select id="ev-type" class="mi">
+        <option value="expense">Payment</option>
+        <option value="income">Income</option>
+        <option value="reminder">Reminder</option>
+      </select>
+      <button class="msub" onclick="addCalEvent()">Add Event</button>
+    </div>
+  </div>
+
+  <div id="bill-modal" class="modal hidden">
+    <div class="mh">
+      <h2>Add Recurring Bill</h2><button onclick="closeModals()">✕</button>
+    </div>
+    <div class="mb">
+      <label>Name</label><input id="b-name" class="mi" placeholder="e.g. Netflix" />
+      <label>Amount</label><input id="b-amt" type="number" class="mi" placeholder="$0.00" />
+      <label>Due Day</label><input id="b-day" type="number" class="mi" placeholder="15" min="1" max="31" />
+      <label>Category</label>
+      <select id="b-cat" class="mi">
+        <option value="rent">🏠 Rent</option>
+        <option value="food">🍔 Food</option>
+        <option value="transport">🚌 Transport</option>
+        <option value="subscription">📱 Subscription</option>
+        <option value="utilities">💡 Utilities</option>
+        <option value="tuition">🎓 Tuition</option>
+        <option value="other">📦 Other</option>
+      </select>
+      <button class="msub" onclick="addBill()">Add Bill</button>
+    </div>
+  </div>
+
+  <div id="goal-modal" class="modal hidden">
+    <div class="mh">
+      <h2>New Financial Goal</h2><button onclick="closeModals()">✕</button>
+    </div>
+    <div class="mb">
+      <label>Goal Title</label><input id="g-title" class="mi" placeholder="e.g. Buy a Laptop" />
+      <label>Target Amount</label><input id="g-target" type="number" class="mi" placeholder="$0.00" />
+      <button class="msub" onclick="addGoal()">Create Goal</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/robot.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>
