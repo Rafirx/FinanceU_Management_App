@@ -154,6 +154,8 @@ function createMainRobot() {
 }
 
 // ── ROBOT SPEECH ROTATION ─────────────────────────────────
+
+
 let robotMsgIdx = 0;
 function rotateRobotMessage() {
   const el = document.getElementById('rb-msg');

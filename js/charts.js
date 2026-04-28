@@ -72,15 +72,18 @@ function drawChart(mode) {
   ctx.clearRect(0, 0, W, H);
 
   // Grid lines
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  const isLight = document.body.classList.contains('light-mode');
+  ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
   ctx.lineWidth = 1;
   for (let i = 0; i <= 4; i++) {
     const y = pad.top + cH - (cH * i / 4);
     ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
-    ctx.fillStyle = 'rgba(136,146,164,0.6)';
+    ctx.fillStyle = isLight ? '#1e293b' : 'rgba(136,146,164,0.6)';
+
     ctx.font = '10px Inter';
     ctx.fillText('$' + Math.round(max * i / 4), 0, y + 4);
   }
+
 
   // Bars
   data.labels.forEach((lbl, i) => {
@@ -107,10 +110,12 @@ function drawChart(mode) {
     ctx.fill();
 
     // Label
-    ctx.fillStyle = 'rgba(136,146,164,0.8)';
+    ctx.fillStyle = isLight ? '#334155' : 'rgba(136,146,164,0.8)';
+
     ctx.font = '11px Inter';
     ctx.textAlign = 'center';
     ctx.fillText(lbl, x + barW, H - 8);
+
   });
 
   // Legend
@@ -119,10 +124,12 @@ function drawChart(mode) {
     const lx = pad.left + i * 90;
     ctx.fillStyle = '#' + col;
     ctx.fillRect(lx, 6, 10, 10);
-    ctx.fillStyle = 'rgba(136,146,164,0.9)';
+    ctx.fillStyle = isLight ? '#1e293b' : 'rgba(136,146,164,0.9)';
+
     ctx.font = '11px Inter';
     ctx.fillText(lbl, lx + 14, 15);
   });
+
 }
 
 function switchChart(mode, btn) {
@@ -158,11 +165,13 @@ function drawRingChart() {
   ctx.clearRect(0, 0, S, S);
 
   // Background ring
+  const isLight = document.body.classList.contains('light-mode');
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
   ctx.lineWidth = lw;
   ctx.stroke();
+
 
   if (totalTarget > 0) {
     GOALS.forEach(g => {
