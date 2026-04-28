@@ -15,6 +15,7 @@
 </head>
 
 <body>
+  <canvas id="bg-canvas"></canvas>
 
   <!-- SPLASH -->
   <div id="splash">
@@ -40,7 +41,7 @@
         <input type="text" id="auth-user" class="mi" placeholder="Username" />
         <input type="password" id="auth-pass" class="mi" placeholder="Password" />
         <div id="signup-fields" class="hidden" style="display:flex;flex-direction:column;gap:16px;">
-          <input type="text" id="auth-card" class="mi" placeholder="Card Number"
+          <input type="text" id="auth-card" class="mi" placeholder="Card Number (e.g. 4000 1234 5678 9010)"
             maxlength="12" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
           <div style="display:flex;gap:12px;">
             <input type="text" id="auth-exp" class="mi" placeholder="MM/YY" />
@@ -81,23 +82,36 @@
             onclick="showPage('calendar')"><i>▦</i><span>Calendar</span></button></li>
         <li><button class="nav-btn" id="nb-assistant" onclick="showPage('assistant')"><i>✦</i><span>AXIS
               AI</span></button></li>
+        <li><button class="nav-btn" id="nb-leaderboard" onclick="showPage('leaderboard')"><i>🏆</i><span>Leaderboard</span></button></li>
+
         <li style="margin-top: 20px;"><button class="nav-btn" onclick="handleLogout()"
             style="color: var(--red);"><i>⎋</i><span>Log Out</span></button></li>
       </ul>
+      <div class="theme-switch-wrapper">
+        <span class="theme-label">Light Mode</span>
+        <label class="theme-switch" for="checkbox">
+          <input type="checkbox" id="checkbox" onchange="toggleTheme()" />
+          <div class="slider">
+            <span class="icon">🌙</span>
+            <span class="icon">☀️</span>
+          </div>
+        </label>
+      </div>
       <div class="sidebar-profile">
         <div class="avatar" id="sidebar-avatar">AJ</div>
         <div>
           <p class="pname" id="sidebar-pname">Alex Johnson</p>
-          <p class="prole" id="sidebar-prole">College Student</p>
+          <p class="prole" id="sidebar-prole">Level <span id="user-level">5</span> • <span id="user-score">450</span> pts</p>
         </div>
       </div>
+
     </nav>
 
     <!-- MOBILE HEADER -->
     <header class="mob-header">
       <button id="menu-tog" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
       <div class="mob-logo">Finance<span class="acc">U</span></div>
-      <button class="notif-btn" onclick="showPage('assistant')">🔔<span class="badge" id="notif-badge">3</span></button>
+      <button class="notif-btn" onclick="toggleChatDrawer()">🔔<span class="badge" id="notif-badge">3</span></button>
     </header>
 
     <!-- MAIN -->
@@ -158,15 +172,18 @@
           </div>
           <ul id="recent-tx"></ul>
         </div>
-        <div class="robot-banner glass" onclick="showPage('assistant')">
-          <canvas id="banner-robot" width="80" height="80"></canvas>
-          <div class="rb-text">
-            <p class="rb-name">🤖 AXIS says...</p>
-            <p id="rb-msg">Rent is due in 3 days! Have $800 ready.</p>
+        <div class="glass robot-banner" onclick="showPage('assistant')">
+          <div class="rb-left">
+            <canvas id="banner-robot"></canvas>
+            <div class="rb-info">
+              <p class="rb-title">AXIS Intelligence</p>
+              <p id="rb-msg" class="rb-msg">Analyzing your spending patterns...</p>
+            </div>
           </div>
           <span class="rb-arrow">→</span>
         </div>
       </section>
+
 
       <!-- WALLET -->
       <section id="page-wallet" class="page">
@@ -192,6 +209,12 @@
             <div class="acc-b" id="wallet-emer-display">$600.00</div>
             <div class="acc-n" id="wallet-emer-card">•••• 2210</div>
           </div>
+          <!-- BANK INTEGRATION MOCK -->
+          <div class="acc-card glass acc-add" onclick="showToast('Connecting to your bank securely...')">
+            <div class="acc-plus">+</div>
+            <div class="acc-t">Connect Bank</div>
+            <div class="acc-n">Sync every cent in real-time</div>
+          </div>
         </div>
         <div class="act-grid">
           <button class="act-btn glass" onclick="openModal('send-modal')"><span class="ai send-ai">↑</span>Send</button>
@@ -215,15 +238,14 @@
       </section>
 
       <!-- CALENDAR -->
-
-      <!-- CALENDAR -->
       <section id="page-calendar" class="page">
         <div class="pg-head">
           <div>
             <h1 class="pg-title">Financial Calendar</h1>
             <p class="pg-sub">Track financial events</p>
-          </div><button class="add-btn" onclick="openModal('event-modal')">+ Event</button>
+          </div>
         </div>
+
         <div class="glass cal-card">
           <div class="cal-head"><button onclick="changeMonth(-1)" class="cal-nav">‹</button>
             <h2 id="cal-title"></h2><button onclick="changeMonth(1)" class="cal-nav">›</button>
@@ -233,12 +255,6 @@
           </div>
           <div id="cal-grid" class="cal-grid"></div>
         </div>
-        <div class="glass card-section">
-          <div class="sec-head">
-            <h2>Upcoming Events</h2>
-          </div>
-          <ul id="events-list"></ul>
-        </div>
       </section>
 
       <!-- PAYMENTS -->
@@ -247,7 +263,12 @@
           <div>
             <h1 class="pg-title">Payments &amp; Bills</h1>
             <p class="pg-sub">Never miss a payment</p>
-          </div><button class="add-btn" onclick="openModal('bill-modal')">+ Add Bill</button>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="add-btn" onclick="openModal('bill-modal')">+ Add Bill</button>
+            <button class="add-btn" style="background:var(--green);" onclick="openModal('income-modal')">+ Add
+              Income</button>
+          </div>
         </div>
         <div class="glass card-section">
           <h2>⚡ Due Soon</h2>
@@ -269,7 +290,11 @@
           <div>
             <h1 class="pg-title">Savings & Goals</h1>
             <p class="pg-sub">Milestones worth chasing</p>
-          </div><button class="add-btn" onclick="openModal('goal-modal')">+ New Goal</button>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="add-btn" style="background:var(--accent2);" onclick="openModal('autotransfer-modal')">⚡ Auto-Transfer</button>
+            <button class="add-btn" onclick="openModal('goal-modal')">+ New Goal</button>
+          </div>
         </div>
 
         <div class="glass savings-overview">
@@ -305,7 +330,7 @@
           <div class="robot-info"><span class="r-name">AXIS</span><span class="status-dot"></span><span>Active</span>
           </div>
           <div class="speech-bubble" id="speech-bubble">
-            <p id="speech-text">Hi Alex! I'm AXIS. Ask me anything about your finances!</p>
+            <p id="speech-text">Hi Alex! I'm AXIS. Did you know 70% of freshmen have never paid a bill alone? I'm here to help you beat the odds!</p>
           </div>
         </div>
         <div class="glass card-section">
@@ -324,12 +349,101 @@
         </div>
       </section>
 
+      <!-- LEADERBOARD -->
+      <section id="page-leaderboard" class="page">
+        <div class="pg-head">
+          <div>
+            <h1 class="pg-title">Global Leaderboard</h1>
+            <p class="pg-sub">Conquer everyday tasks and climb to the top</p>
+          </div>
+        </div>
+
+        <!-- Horizontal Quests Section -->
+        <div class="glass card-section quest-strip">
+          <div class="sec-head">
+            <h2>⚡ Daily Quests</h2>
+            <span class="quest-count" id="quest-count">1/4 Done</span>
+          </div>
+          <ul id="daily-quests" class="quest-list horizontal"></ul>
+        </div>
+
+        <!-- SQUAD QUESTS -->
+        <div class="glass card-section squad-section">
+          <div class="sec-head">
+            <h2>👥 Squad Quests</h2>
+            <button class="add-btn" onclick="showToast('Friends feature coming soon!')">+ Invite Squad</button>
+          </div>
+          <p class="pg-sub" style="margin-bottom:15px;">Save for trips and parties with your friends</p>
+          <div id="squad-quests" class="squad-grid"></div>
+        </div>
+
+        <div class="lb-full-wrap">
+          <div class="glass leaderboard-card full-width">
+            <div class="lb-header">
+              <span>Rank</span><span>User</span><span style="text-align:right">Score</span>
+            </div>
+            <ul id="leaderboard-list" class="lb-list wide"></ul>
+          </div>
+        </div>
+
+        <div class="glass card-section">
+          <h2>🏆 Points Guide</h2>
+          <div class="pts-info-grid wide">
+            <div class="pts-item horizontal"><span>☀️</span><div><p>Check-in</p><strong>+10 pts</strong></div></div>
+            <div class="pts-item horizontal"><span>📝</span><div><p>Log Transaction</p><strong>+20 pts</strong></div></div>
+            <div class="pts-item horizontal"><span>🏦</span><div><p>Save to Vault</p><strong>+50 pts</strong></div></div>
+            <div class="pts-item horizontal"><span>🎖️</span><div><p>Earn Badge</p><strong>+100 pts</strong></div></div>
+          </div>
+        </div>
+      </section>
+
+
+
     </main>
+
   </div>
 
-  <!-- MODALS -->
+  <!-- FLOATING AXIS TRIGGER -->
+  <div id="floating-axis-trigger" onclick="toggleChatDrawer()">
+    <div class="floating-robot-wrap">
+      <canvas id="floating-robot-canvas"></canvas>
+    </div>
+    <div class="floating-bubble">
+      Decision Check? 💡
+    </div>
+  </div>
+
+  <!-- CHAT DRAWER -->
+  <div id="chat-drawer" class="chat-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <div class="status-dot"></div>
+        <span>AXIS Intelligence</span>
+      </div>
+      <button class="drawer-close" onclick="toggleChatDrawer()">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div id="drawer-chat-msgs" class="chat-msgs">
+        <div class="msg bot">🤖 Hi Alex! I'm your AXIS co-pilot. How can I help with your senior year goals today?</div>
+      </div>
+      <div id="drawer-quick-qs" class="quick-qs-drawer"></div>
+    </div>
+    <div class="drawer-footer">
+      <div class="chat-row">
+        <input id="drawer-chat-in" class="chat-in" placeholder="Ask AXIS..."
+          onkeydown="if(event.key==='Enter') sendDrawerChat()" />
+        <button class="chat-send" onclick="sendDrawerChat()">→</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAYS -->
+  <div id="drawer-overlay" class="drawer-overlay" onclick="toggleChatDrawer()"></div>
   <div id="modal-bg" class="modal-bg hidden" onclick="closeModals()"></div>
 
+
+
+  <!-- MODALS -->
   <div id="send-modal" class="modal hidden">
     <div class="mh">
       <h2>Send Money</h2><button onclick="closeModals()">✕</button>
@@ -401,6 +515,30 @@
     </div>
   </div>
 
+  <div id="day-events-modal" class="modal hidden">
+    <div class="mh">
+      <h2 id="day-modal-title">Daily Events</h2><button onclick="closeModals()">✕</button>
+    </div>
+    <div class="mb">
+      <ul id="day-events-list" class="day-ev-list"></ul>
+      <p id="day-no-events" class="hidden" style="color:var(--text2);text-align:center;padding:20px;">No events for this
+        day.</p>
+    </div>
+  </div>
+
+  <div id="fund-goal-modal" class="modal hidden">
+    <div class="mh">
+      <h2>Add to Goal</h2><button onclick="closeModals()">✕</button>
+    </div>
+    <div class="mb">
+      <p style="color:var(--text2);margin-bottom:16px;font-size:0.85rem">Transfer money from Checking directly to this Goal.</p>
+      <input type="hidden" id="fund-goal-id" />
+      <label>Amount to Transfer</label>
+      <input id="fund-goal-amt" type="number" class="mi" placeholder="$0.00" />
+      <button class="msub" onclick="submitFundGoal()">Transfer Funds</button>
+    </div>
+  </div>
+
   <div id="event-modal" class="modal hidden">
     <div class="mh">
       <h2>Add Calendar Event</h2><button onclick="closeModals()">✕</button>
@@ -419,14 +557,64 @@
     </div>
   </div>
 
+  <div id="income-modal" class="modal hidden">
+    <div class="mh">
+      <h2>Add Income</h2><button onclick="closeModals()">✕</button>
+    </div>
+    <div class="mb">
+      <label>Source Name</label><input id="i-name" class="mi" placeholder="e.g. Freelance Gig" />
+      <label>Amount</label><input id="i-amt" type="number" class="mi" placeholder="$0.00" />
+
+      <div style="display:flex; align-items:center; gap:10px; margin: 10px 0;">
+        <input type="checkbox" id="i-recurring" checked onchange="toggleIncomeRecurring()" />
+        <label for="i-recurring" style="margin:0;">Recurring Income</label>
+      </div>
+
+      <div id="i-day-wrap">
+        <label>Pay Day (of month)</label>
+        <input id="i-day" type="number" class="mi" placeholder="1" min="1" max="31" />
+      </div>
+
+      <div id="i-date-wrap" class="hidden">
+        <label>Pay Date</label>
+        <input id="i-date" type="date" class="mi" />
+      </div>
+
+      <label>Category</label>
+      <select id="i-cat" class="mi">
+        <option value="job">💼 Job</option>
+        <option value="freelance">🎨 Freelance</option>
+        <option value="gift">🎁 Gift</option>
+        <option value="aid">🎓 Financial Aid</option>
+        <option value="other">💰 Other</option>
+      </select>
+      <button class="msub" style="background:var(--green);" onclick="addIncome()">Add Income</button>
+    </div>
+  </div>
+
   <div id="bill-modal" class="modal hidden">
     <div class="mh">
-      <h2>Add Recurring Bill</h2><button onclick="closeModals()">✕</button>
+      <h2 id="bill-modal-title">Add Bill</h2><button onclick="closeModals()">✕</button>
     </div>
     <div class="mb">
       <label>Name</label><input id="b-name" class="mi" placeholder="e.g. Netflix" />
       <label>Amount</label><input id="b-amt" type="number" class="mi" placeholder="$0.00" />
-      <label>Due Day</label><input id="b-day" type="number" class="mi" placeholder="15" min="1" max="31" />
+
+      <div style="display:flex; align-items:center; gap:10px; margin: 10px 0;">
+        <input type="checkbox" id="b-recurring" checked onchange="toggleBillRecurring()" />
+        <label for="b-recurring" style="margin:0;">Recurring Bill</label>
+      </div>
+
+      <div id="b-day-wrap">
+        <label>Due Day (of month)</label>
+        <input id="b-day" type="number" class="mi" placeholder="15" min="1" max="31" />
+      </div>
+
+      <div id="b-date-wrap" class="hidden">
+        <label>Due Date</label>
+        <input id="b-date" type="date" class="mi" />
+      </div>
+
       <label>Category</label>
       <select id="b-cat" class="mi">
         <option value="rent">🏠 Rent</option>
@@ -441,21 +629,44 @@
     </div>
   </div>
 
-  <div id="goal-modal" class="modal hidden">
+  <div id="pay-confirm-modal" class="modal hidden">
     <div class="mh">
-      <h2>New Financial Goal</h2><button onclick="closeModals()">✕</button>
+      <h2>Confirm Payment</h2><button onclick="closeModals()">✕</button>
     </div>
     <div class="mb">
-      <label>Goal Title</label><input id="g-title" class="mi" placeholder="e.g. Buy a Laptop" />
-      <label>Target Amount</label><input id="g-target" type="number" class="mi" placeholder="$0.00" />
-      <button class="msub" onclick="addGoal()">Create Goal</button>
+      <p id="pay-confirm-text" style="margin-bottom:16px;"></p>
+      <input type="hidden" id="pay-bill-id" />
+      <label>Pay From</label>
+      <select id="pay-source" class="mi"></select>
+      <button class="msub" onclick="submitPayBill()">Confirm & Pay</button>
+    </div>
+  </div>
+
+  <div id="autotransfer-modal" class="modal hidden">
+    <div class="mh">
+      <h2>Set Auto-Transfer</h2><button onclick="closeModals()">✕</button>
+    </div>
+    <div class="mb">
+      <p style="color:var(--text2);margin-bottom:16px;font-size:0.85rem">Automatically move money from Checking to a Vault on a schedule.</p>
+      <label>Destination Vault</label>
+      <select id="at-dest" class="mi"></select>
+      <label>Amount</label>
+      <input id="at-amt" type="number" class="mi" placeholder="$0.00" />
+      <label>Frequency</label>
+      <select id="at-freq" class="mi">
+        <option value="weekly">Every Week</option>
+        <option value="monthly">Every Month</option>
+      </select>
+      <button class="msub" style="background:var(--accent2);" onclick="handleAutoTransfer()">Schedule Rule</button>
     </div>
   </div>
 
   <div id="toast" class="toast hidden"></div>
 
   <script src="js/data.js"></script>
+  <script src="js/background.js"></script>
   <script src="js/robot.js"></script>
+
   <script src="js/charts.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/app.js"></script>
